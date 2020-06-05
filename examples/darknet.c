@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 extern void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *filename, int top);
-extern void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
+extern void test_detector(char *datacfg, char *cfgfile, char *weightfile, char **filenames, int num_files, float thresh, float hier_thresh, char *outfile, int fullscreen);
 extern void run_yolo(int argc, char **argv);
 extern void run_detector(int argc, char **argv);
 extern void run_coco(int argc, char **argv);
@@ -435,7 +435,16 @@ int main(int argc, char **argv)
         char *outfile = find_char_arg(argc, argv, "-out", 0);
         char *datacfg = find_char_arg(argc, argv, "-datacfg", "cfg/coco.data");
         int fullscreen = find_arg(argc, argv, "-fullscreen");
-        test_detector(datacfg, argv[2], argv[3], filename, thresh, .5, outfile, fullscreen);
+        char **filenames = &filename;
+        test_detector(datacfg, argv[2], argv[3], filenames, 1, thresh, .5, outfile, fullscreen);
+    } else if (0 == strcmp(argv[1], "detectmulti")){
+        float thresh = find_float_arg(argc, argv, "-thresh", .5);
+        char *outfile = find_char_arg(argc, argv, "-out", 0);
+        char *datacfg = find_char_arg(argc, argv, "-datacfg", "cfg/coco.data");
+        int fullscreen = find_arg(argc, argv, "-fullscreen");
+        int num_files = argc - 4;
+        char **filenames = &argv[4];
+        test_detector(datacfg, argv[2], argv[3], filenames, num_files, thresh, .5, outfile, fullscreen);
     } else if (0 == strcmp(argv[1], "cifar")){
         run_cifar(argc, argv);
     } else if (0 == strcmp(argv[1], "go")){

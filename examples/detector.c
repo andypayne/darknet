@@ -559,7 +559,7 @@ void validate_detector_recall(char *cfgfile, char *weightfile)
 }
 
 
-void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen)
+void test_detector(char *datacfg, char *cfgfile, char *weightfile, char **filenames, int num_files, float thresh, float hier_thresh, char *outfile, int fullscreen)
 {
     list *options = read_data_cfg(datacfg);
     char *name_list = option_find_str(options, "names", "data/names.list");
@@ -573,9 +573,10 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     char buff[256];
     char *input = buff;
     float nms=.45;
+    int file_idx = 0;
     while(1){
-        if(filename){
-            strncpy(input, filename, 256);
+        if(filenames && file_idx < num_files){
+            strncpy(input, filenames[file_idx], 256);
         } else {
             printf("Enter Image Path: ");
             fflush(stdout);
@@ -591,7 +592,6 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
         //resize_network(net, sized.w, sized.h);
         layer l = net->layers[net->n-1];
 
-
         float *X = sized.data;
         time=what_time_is_it_now();
         network_predict(net, X);
@@ -604,7 +604,9 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
         draw_detections(im, dets, nboxes, thresh, names, alphabet, l.classes);
         free_detections(dets, nboxes);
         if(outfile){
-            save_image(im, outfile);
+            char full_outfile[300];
+            sprintf(full_outfile, "%s__%02d", filenames[file_idx], file_idx);
+            save_image(im, full_outfile);
         }
         else{
             save_image(im, "predictions");
@@ -616,7 +618,8 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
 
         free_image(im);
         free_image(sized);
-        if (filename) break;
+        file_idx += 1;
+        if (file_idx == num_files) break;
     }
 }
 
@@ -833,7 +836,8 @@ void run_detector(int argc, char **argv)
     char *cfg = argv[4];
     char *weights = (argc > 5) ? argv[5] : 0;
     char *filename = (argc > 6) ? argv[6]: 0;
-    if(0==strcmp(argv[2], "test")) test_detector(datacfg, cfg, weights, filename, thresh, hier_thresh, outfile, fullscreen);
+    char **filenames = &filename;
+    if(0==strcmp(argv[2], "test")) test_detector(datacfg, cfg, weights, filenames, 1, thresh, hier_thresh, outfile, fullscreen);
     else if(0==strcmp(argv[2], "train")) train_detector(datacfg, cfg, weights, gpus, ngpus, clear);
     else if(0==strcmp(argv[2], "valid")) validate_detector(datacfg, cfg, weights, outfile);
     else if(0==strcmp(argv[2], "valid2")) validate_detector_flip(datacfg, cfg, weights, outfile);
