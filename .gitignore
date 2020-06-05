@@ -20,6 +20,7 @@ darknet
 .fuse*
 *.a
 *.so
+bad.list
 
 # OS Generated #
 .DS_Store*
