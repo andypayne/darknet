@@ -438,12 +438,27 @@ int main(int argc, char **argv)
         char **filenames = &filename;
         test_detector(datacfg, argv[2], argv[3], filenames, 1, thresh, .5, outfile, fullscreen);
     } else if (0 == strcmp(argv[1], "detectmulti")){
+        // TODO: The arg parsing needs an overhaul, probably a migration to a
+        // library.
+        int num_files = argc - 8;
+        fprintf(stderr, "num_files = %d\n", num_files);
+        char **filenames = calloc(num_files, sizeof(*filenames));
+        for (int i = 0; i < num_files; i++) {
+          filenames[i] = malloc(300 * sizeof(char));
+          if (!filenames[i]) {
+            fprintf(stderr, "Error: memory allocation failed.\n");
+            return -1;
+          }
+          strncpy(filenames[i], argv[8 + i], 300);
+        }
         float thresh = find_float_arg(argc, argv, "-thresh", .5);
         char *outfile = find_char_arg(argc, argv, "-out", 0);
         char *datacfg = find_char_arg(argc, argv, "-datacfg", "cfg/coco.data");
         int fullscreen = find_arg(argc, argv, "-fullscreen");
-        int num_files = argc - 4;
-        char **filenames = &argv[4];
+        fprintf(stderr, "FILES[%d]:\n", num_files);
+        for (int i = 0; i < num_files; i++) {
+          fprintf(stderr, "  [%d] = %s\n", i, filenames[i]);
+        }
         test_detector(datacfg, argv[2], argv[3], filenames, num_files, thresh, .5, outfile, fullscreen);
     } else if (0 == strcmp(argv[1], "cifar")){
         run_cifar(argc, argv);

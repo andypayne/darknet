@@ -575,8 +575,10 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char **filena
     float nms=.45;
     int file_idx = 0;
     while(1){
-        if(filenames && file_idx < num_files){
-            strncpy(input, filenames[file_idx], 256);
+        if(filenames){
+            if(file_idx < num_files){
+                strncpy(input, filenames[file_idx], 256);
+            }
         } else {
             printf("Enter Image Path: ");
             fflush(stdout);
@@ -605,7 +607,8 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char **filena
         free_detections(dets, nboxes);
         if(outfile){
             char full_outfile[300];
-            sprintf(full_outfile, "%s__%02d", filenames[file_idx], file_idx);
+            sprintf(full_outfile, "%s__%02d", outfile, file_idx);
+            fprintf(stderr, "full_outfile: %s\n", full_outfile);
             save_image(im, full_outfile);
         }
         else{
@@ -619,7 +622,9 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char **filena
         free_image(im);
         free_image(sized);
         file_idx += 1;
-        if (file_idx == num_files) break;
+        if (file_idx == num_files) {
+            break;
+        }
     }
 }
 
